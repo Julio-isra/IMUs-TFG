@@ -1,31 +1,30 @@
 import os
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, RedirectResponse
+from fastapi.staticfiles import StaticFiles
 
 app = FastAPI()
 
 # 1. ¡ATENCIÓN! Pon aquí la ruta exacta donde están tus 13 GB de JSONs
 CARPETA_DATOS = r"D:\Universidad\TFG\IMU_App_JSON" 
 
+# 2. Le decimos a FastAPI que sirva la página web desde la carpeta "static"
+app.mount("/web", StaticFiles(directory="static", html=True), name="static")
+
+# 3. Hacemos que si entras a la IP "pelada", te redirija a la web automáticamente
 @app.get("/")
 def ruta_principal():
-    return {"mensaje": "Servidor IMU TFG funcionando correctamente."}
+    return RedirectResponse(url="/web/")
 
-# 2. Creamos la ruta dinámica para pedir pacientes
+# 4. Tu tubería de datos intacta (El almacén de JSONs)
 @app.get("/paciente/{nombre_archivo}")
 def obtener_paciente(nombre_archivo: str):
-    
-    # Por si a la app se le olvida poner el ".json" al final, se lo ponemos nosotros
     if not nombre_archivo.endswith('.json'):
         nombre_archivo += '.json'
         
-    # Unimos la ruta de la carpeta con el nombre del archivo
     ruta_completa = os.path.join(CARPETA_DATOS, nombre_archivo)
     
-    # Comprobamos si el archivo existe en tu disco duro
     if not os.path.exists(ruta_completa):
-        # Si alguien pide un paciente que no existe, damos error 404
         raise HTTPException(status_code=404, detail="Datos del paciente no encontrados")
     
-    # 3. La magia: Enviamos el archivo directamente sin cargarlo en RAM
     return FileResponse(ruta_completa, media_type="application/json")

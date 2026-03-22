@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TFG Biomecánica - Dashboard Dual</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        .caja-scroll {
+            overflow-x: auto;
+            overflow-y: hidden;
+            width: 100%;
+            border-radius: 5px;
+        }
+        /* Hacemos las gráficas un poco más bajitas para que quepan las dos en la pantalla */
+        .altura-canvas {
+            height: 300px; 
+        }
+    </style>
+</head>
+<body class="bg-light">
+
+    <div class="container mt-4">
+        
+        <div class="text-center mb-4">
+            <h2 class="text-primary fw-bold">Dashboard IMU - TFG</h2>
+            <p class="text-muted" id="mensaje-estado">Introduce el ID del paciente para comenzar</p>
+        </div>
+
+        <div class="card shadow-sm mb-4" id="caja-descarga">
+            <div class="card-body">
+                <label for="input-paciente" class="form-label fw-bold">ID del Paciente:</label>
+                <div class="input-group input-group-lg mb-3">
+                    <span class="input-group-text bg-primary text-white">🆔</span>
+                    <input type="text" id="input-paciente" class="form-control" placeholder="Ej: 20090527T000000">
+                </div>
+                <div class="d-grid gap-2">
+                    <button class="btn btn-primary btn-lg shadow" onclick="descargarDatos()">
+                        ⬇️ Descargar Datos del Paciente
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="zona-graficas" style="display: none;">
+            
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="text-primary fw-bold mb-0" id="titulo-grafica">Paciente: -</h4>
+                <button class="btn btn-sm btn-outline-danger" onclick="window.location.reload()">Cerrar / Buscar Otro</button>
+            </div>
+
+            <div class="card shadow-sm mb-4 border-danger">
+                <div class="card-header bg-white border-danger d-flex justify-content-between align-items-center">
+                    <span class="fw-bold text-danger">📈 Acelerómetro (m/s²)</span>
+                    <select id="select-acc" class="form-select form-select-sm w-auto border-danger" onchange="actualizarGraficaAcc()">
+                        </select>
+                </div>
+                <div class="card-body p-0">
+                    <div class="caja-scroll p-3">
+                        <div id="contenedor-canvas-acc" class="altura-canvas" style="min-width: 100%;">
+                            <canvas id="graficaAcc"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm mb-4 border-primary">
+                <div class="card-header bg-white border-primary d-flex justify-content-between align-items-center">
+                    <span class="fw-bold text-primary">🌀 Giroscopio (deg/s)</span>
+                    <select id="select-gyr" class="form-select form-select-sm w-auto border-primary" onchange="actualizarGraficaGyr()">
+                        </select>
+                </div>
+                <div class="card-body p-0">
+                    <div class="caja-scroll p-3">
+                        <div id="contenedor-canvas-gyr" class="altura-canvas" style="min-width: 100%;">
+                            <canvas id="graficaGyr"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+<script>
+        let datosPacienteCompleto = null; 
+        let chartAcc = null;
+        let chartGyr = null;
+
+        async function descargarDatos() {
+            const mensaje = document.getElementById('mensaje-estado');
+            const inputId = document.getElementById('input-paciente').value.trim();
+            
+            if (inputId === "") {
+                mensaje.innerHTML = `<span class="text-danger fw-bold">⚠️ Escribe un ID.</span>`;
+                return; 
+            }
+
+            mensaje.innerText = "Descargando matriz tridimensional... ⏳";
+
+            try {
+                const url = `/paciente/${inputId}`; 
+                const respuesta = await fetch(url);
+                
+                if (respuesta.ok) {
+                    datosPacienteCompleto = await respuesta.json();
+                    
+                    document.getElementById('caja-descarga').style.display = 'none';
+                    document.getElementById('zona-graficas').style.display = 'block';
+                    document.getElementById('titulo-grafica').innerText = `Paciente: ${inputId}`;
+                    
+                    llenarDesplegables();
+                    
+                    actualizarGraficaAcc();
+                    actualizarGraficaGyr();
+                    
+                } else {
+                    mensaje.innerHTML = `<span class="text-danger fw-bold">❌ Error: No se encuentra '${inputId}'.</span>`;
+                }
+            } catch (error) {
+                mensaje.innerText = `Error de conexión: ${error}`;
+            }
+        }
+
+        function llenarDesplegables() {
+            const selectAcc = document.getElementById('select-acc');
+            const selectGyr = document.getElementById('select-gyr');
+            
+            selectAcc.innerHTML = "";
+            selectGyr.innerHTML = "";
+
+            // Llenamos el menú del Acelerómetro
+            if (datosPacienteCompleto.acc_interp_nooutliers) {
+                Object.keys(datosPacienteCompleto.acc_interp_nooutliers).forEach(parte => {
+                    selectAcc.appendChild(new Option(parte.replace(/_/g, " ").toUpperCase(), parte));
+                });
+            }
+
+            // CORRECCIÓN AQUÍ: Ahora dice "gyro_" con la "o"
+            if (datosPacienteCompleto.gyro_interp_nooutliers) {
+                Object.keys(datosPacienteCompleto.gyro_interp_nooutliers).forEach(parte => {
+                    selectGyr.appendChild(new Option(parte.replace(/_/g, " ").toUpperCase(), parte));
+                });
+            }
+        }
+
+        function actualizarGraficaAcc() {
+            const parteElegida = document.getElementById('select-acc').value;
+            if (!parteElegida) return;
+            
+            const matrizDatos = datosPacienteCompleto.acc_interp_nooutliers[parteElegida];
+            chartAcc = procesarYDibujar(chartAcc, 'graficaAcc', 'contenedor-canvas-acc', matrizDatos, 'Aceleración (m/s²)');
+        }
+
+        function actualizarGraficaGyr() {
+            const parteElegida = document.getElementById('select-gyr').value;
+            if (!parteElegida) return;
+            
+            // CORRECCIÓN AQUÍ TAMBIÉN: Ahora dice "gyro_"
+            const matrizDatos = datosPacienteCompleto.gyro_interp_nooutliers[parteElegida];
+            chartGyr = procesarYDibujar(chartGyr, 'graficaGyr', 'contenedor-canvas-gyr', matrizDatos, 'Vel. Angular (deg/s)');
+        }
+
+        function procesarYDibujar(instanciaChart, idCanvas, idContenedor, matrizDatos, tituloY) {
+            let ejeX = [], ejeY = [], ejeZ = [], etiquetasTiempo = [];
+            let contadorMuestras = 0;
+            let totalPasos = matrizDatos.length;
+
+            for (let p = 0; p < totalPasos; p++) {
+                let pasoActual = matrizDatos[p];
+                for (let t = 0; t < 180; t++) {
+                    ejeX.push(pasoActual[t][0]);
+                    ejeY.push(pasoActual[t][1]);
+                    ejeZ.push(pasoActual[t][2]);
+                    etiquetasTiempo.push(contadorMuestras);
+                    contadorMuestras++;
+                }
+            }
+
+            document.getElementById(idContenedor).style.minWidth = `${totalPasos * 150}px`;
+
+            if (instanciaChart != null) {
+                instanciaChart.destroy();
+            }
+
+            const ctx = document.getElementById(idCanvas).getContext('2d');
+            
+            return new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: etiquetasTiempo,
+                    datasets: [
+                        { label: 'Eje X', data: ejeX, borderColor: 'red', borderWidth: 2, pointRadius: 0, tension: 0.4 },
+                        { label: 'Eje Y', data: ejeY, borderColor: 'green', borderWidth: 2, pointRadius: 0, tension: 0.4 },
+                        { label: 'Eje Z', data: ejeZ, borderColor: 'blue', borderWidth: 2, pointRadius: 0, tension: 0.4 }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false, 
+                    interaction: { mode: 'index', intersect: false },
+                    scales: {
+                        x: { display: false }, 
+                        y: { title: { display: true, text: tituloY } }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
