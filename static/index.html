@@ -3,22 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TFG Biomecánica - Dashboard Dual</title>
+    <title>TFG Biomecánica - Dashboard Clínico Avanzado</title>
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <style>
-        .caja-scroll {
-            overflow-x: auto;
-            overflow-y: hidden;
-            width: 100%;
-            border-radius: 5px;
-        }
-        /* Hacemos las gráficas un poco más bajitas para que quepan las dos en la pantalla */
-        .altura-canvas {
-            height: 300px; 
-        }
+        .caja-scroll { overflow-x: auto; overflow-y: hidden; width: 100%; border-radius: 5px; }
+        .altura-canvas { height: 350px; }
     </style>
 </head>
 <body class="bg-light">
@@ -26,37 +18,64 @@
     <div class="container mt-4">
         
         <div class="text-center mb-4">
-            <h2 class="text-primary fw-bold">Dashboard IMU - TFG</h2>
+            <h2 class="text-primary fw-bold">Dashboard IMU Avanzado</h2>
             <p class="text-muted" id="mensaje-estado">Introduce el ID del paciente para comenzar</p>
         </div>
 
         <div class="card shadow-sm mb-4" id="caja-descarga">
             <div class="card-body">
-                <label for="input-paciente" class="form-label fw-bold">ID del Paciente:</label>
                 <div class="input-group input-group-lg mb-3">
                     <span class="input-group-text bg-primary text-white">🆔</span>
-                    <input type="text" id="input-paciente" class="form-control" placeholder="Ej: 20090527T000000">
-                </div>
-                <div class="d-grid gap-2">
-                    <button class="btn btn-primary btn-lg shadow" onclick="descargarDatos()">
-                        ⬇️ Descargar Datos del Paciente
-                    </button>
+                    <input type="text" id="input-paciente" class="form-control" placeholder="ID Paciente (Ej: 20090527T000000)">
+                    <button class="btn btn-primary fw-bold" onclick="descargarDatos()">Descargar</button>
                 </div>
             </div>
         </div>
 
-        <div id="zona-graficas" style="display: none;">
+        <div id="zona-resultados" style="display: none;">
             
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h4 class="text-primary fw-bold mb-0" id="titulo-grafica">Paciente: -</h4>
                 <button class="btn btn-sm btn-outline-danger" onclick="window.location.reload()">Cerrar / Buscar Otro</button>
             </div>
 
+            <div class="card shadow-sm mb-4 border-info">
+                <div class="card-header bg-info text-white fw-bold">📊 Metadatos del Análisis</div>
+                <div class="card-body p-0">
+                    <table class="table table-borderless table-striped mb-0 text-center">
+                        <thead>
+                            <tr>
+                                <th>Frecuencia de Muestreo (Hz)</th>
+                                <th>Pasos Anómalos (Outliers) Eliminados</th>
+                                <th>Pasos Válidos Analizados</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td id="meta-fs" class="fw-bold fs-5 text-secondary">-</td>
+                                <td id="meta-outliers" class="fw-bold fs-5 text-danger">-</td>
+                                <td id="meta-validos" class="fw-bold fs-5 text-success">-</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
             <div class="card shadow-sm mb-4 border-danger">
-                <div class="card-header bg-white border-danger d-flex justify-content-between align-items-center">
+                <div class="card-header bg-white border-danger d-flex flex-wrap justify-content-between align-items-center gap-2">
                     <span class="fw-bold text-danger">📈 Acelerómetro (m/s²)</span>
-                    <select id="select-acc" class="form-select form-select-sm w-auto border-danger" onchange="actualizarGraficaAcc()">
-                        </select>
+                    
+                    <div class="d-flex gap-2">
+                        <div class="btn-group btn-group-sm" role="group">
+                            <input type="radio" class="btn-check" name="modoAcc" id="modoAccCont" value="continuo" autocomplete="off" checked onchange="actualizarGraficaAcc()">
+                            <label class="btn btn-outline-danger" for="modoAccCont">Continuo</label>
+
+                            <input type="radio" class="btn-check" name="modoAcc" id="modoAccMed" value="media" autocomplete="off" onchange="actualizarGraficaAcc()">
+                            <label class="btn btn-outline-danger" for="modoAccMed">Media + Sombra</label>
+                        </div>
+                        
+                        <select id="select-acc" class="form-select form-select-sm w-auto border-danger" onchange="actualizarGraficaAcc()"></select>
+                    </div>
                 </div>
                 <div class="card-body p-0">
                     <div class="caja-scroll p-3">
@@ -68,10 +87,20 @@
             </div>
 
             <div class="card shadow-sm mb-4 border-primary">
-                <div class="card-header bg-white border-primary d-flex justify-content-between align-items-center">
+                <div class="card-header bg-white border-primary d-flex flex-wrap justify-content-between align-items-center gap-2">
                     <span class="fw-bold text-primary">🌀 Giroscopio (deg/s)</span>
-                    <select id="select-gyr" class="form-select form-select-sm w-auto border-primary" onchange="actualizarGraficaGyr()">
-                        </select>
+                    
+                    <div class="d-flex gap-2">
+                        <div class="btn-group btn-group-sm" role="group">
+                            <input type="radio" class="btn-check" name="modoGyr" id="modoGyrCont" value="continuo" autocomplete="off" checked onchange="actualizarGraficaGyr()">
+                            <label class="btn btn-outline-primary" for="modoGyrCont">Continuo</label>
+
+                            <input type="radio" class="btn-check" name="modoGyr" id="modoGyrMed" value="media" autocomplete="off" onchange="actualizarGraficaGyr()">
+                            <label class="btn btn-outline-primary" for="modoGyrMed">Media + Sombra</label>
+                        </div>
+
+                        <select id="select-gyr" class="form-select form-select-sm w-auto border-primary" onchange="actualizarGraficaGyr()"></select>
+                    </div>
                 </div>
                 <div class="card-body p-0">
                     <div class="caja-scroll p-3">
@@ -83,128 +112,185 @@
             </div>
 
         </div>
-
     </div>
 
-<script>
+    <script>
         let datosPacienteCompleto = null; 
         let chartAcc = null;
         let chartGyr = null;
 
         async function descargarDatos() {
-            const mensaje = document.getElementById('mensaje-estado');
             const inputId = document.getElementById('input-paciente').value.trim();
-            
-            if (inputId === "") {
-                mensaje.innerHTML = `<span class="text-danger fw-bold">⚠️ Escribe un ID.</span>`;
-                return; 
-            }
+            if (inputId === "") return alert("Escribe un ID.");
 
-            mensaje.innerText = "Descargando matriz tridimensional... ⏳";
+            document.getElementById('mensaje-estado').innerText = "Descargando matriz...";
 
             try {
-                const url = `/paciente/${inputId}`; 
-                const respuesta = await fetch(url);
-                
+                const respuesta = await fetch(`/paciente/${inputId}`);
                 if (respuesta.ok) {
                     datosPacienteCompleto = await respuesta.json();
                     
                     document.getElementById('caja-descarga').style.display = 'none';
-                    document.getElementById('zona-graficas').style.display = 'block';
+                    document.getElementById('zona-resultados').style.display = 'block';
                     document.getElementById('titulo-grafica').innerText = `Paciente: ${inputId}`;
                     
+                    // Llenar tabla de metadatos
+                    document.getElementById('meta-fs').innerText = datosPacienteCompleto.fs ? datosPacienteCompleto.fs : "Desconocido";
+                    document.getElementById('meta-outliers').innerText = datosPacienteCompleto.outliers ? datosPacienteCompleto.outliers.length : "0";
+                    // Extraemos los pasos válidos contando la longitud de la matriz del pie (si existe)
+                    let pasosValidos = 0;
+                    if(datosPacienteCompleto.acc_interp_nooutliers && datosPacienteCompleto.acc_interp_nooutliers.L_foot) {
+                        pasosValidos = datosPacienteCompleto.acc_interp_nooutliers.L_foot.length;
+                    }
+                    document.getElementById('meta-validos').innerText = pasosValidos;
+
                     llenarDesplegables();
-                    
                     actualizarGraficaAcc();
                     actualizarGraficaGyr();
                     
                 } else {
-                    mensaje.innerHTML = `<span class="text-danger fw-bold">❌ Error: No se encuentra '${inputId}'.</span>`;
+                    alert("Error: Paciente no encontrado.");
                 }
             } catch (error) {
-                mensaje.innerText = `Error de conexión: ${error}`;
+                alert("Error de conexión al servidor.");
             }
         }
 
         function llenarDesplegables() {
             const selectAcc = document.getElementById('select-acc');
             const selectGyr = document.getElementById('select-gyr');
-            
-            selectAcc.innerHTML = "";
-            selectGyr.innerHTML = "";
+            selectAcc.innerHTML = ""; selectGyr.innerHTML = "";
 
-            // Llenamos el menú del Acelerómetro
             if (datosPacienteCompleto.acc_interp_nooutliers) {
-                Object.keys(datosPacienteCompleto.acc_interp_nooutliers).forEach(parte => {
-                    selectAcc.appendChild(new Option(parte.replace(/_/g, " ").toUpperCase(), parte));
-                });
+                Object.keys(datosPacienteCompleto.acc_interp_nooutliers).forEach(p => selectAcc.appendChild(new Option(p.toUpperCase(), p)));
             }
-
-            // CORRECCIÓN AQUÍ: Ahora dice "gyro_" con la "o"
             if (datosPacienteCompleto.gyro_interp_nooutliers) {
-                Object.keys(datosPacienteCompleto.gyro_interp_nooutliers).forEach(parte => {
-                    selectGyr.appendChild(new Option(parte.replace(/_/g, " ").toUpperCase(), parte));
-                });
+                Object.keys(datosPacienteCompleto.gyro_interp_nooutliers).forEach(p => selectGyr.appendChild(new Option(p.toUpperCase(), p)));
             }
         }
 
         function actualizarGraficaAcc() {
-            const parteElegida = document.getElementById('select-acc').value;
-            if (!parteElegida) return;
+            const parte = document.getElementById('select-acc').value;
+            const modo = document.querySelector('input[name="modoAcc"]:checked').value;
+            if (!parte) return;
             
-            const matrizDatos = datosPacienteCompleto.acc_interp_nooutliers[parteElegida];
-            chartAcc = procesarYDibujar(chartAcc, 'graficaAcc', 'contenedor-canvas-acc', matrizDatos, 'Aceleración (m/s²)');
+            const matriz = datosPacienteCompleto.acc_interp_nooutliers[parte];
+            chartAcc = procesarYDibujar(chartAcc, 'graficaAcc', 'contenedor-canvas-acc', matriz, 'Aceleración (m/s²)', modo);
         }
 
         function actualizarGraficaGyr() {
-            const parteElegida = document.getElementById('select-gyr').value;
-            if (!parteElegida) return;
+            const parte = document.getElementById('select-gyr').value;
+            const modo = document.querySelector('input[name="modoGyr"]:checked').value;
+            if (!parte) return;
             
-            // CORRECCIÓN AQUÍ TAMBIÉN: Ahora dice "gyro_"
-            const matrizDatos = datosPacienteCompleto.gyro_interp_nooutliers[parteElegida];
-            chartGyr = procesarYDibujar(chartGyr, 'graficaGyr', 'contenedor-canvas-gyr', matrizDatos, 'Vel. Angular (deg/s)');
+            const matriz = datosPacienteCompleto.gyro_interp_nooutliers[parte];
+            chartGyr = procesarYDibujar(chartGyr, 'graficaGyr', 'contenedor-canvas-gyr', matriz, 'Vel. Angular (deg/s)', modo);
         }
 
-        function procesarYDibujar(instanciaChart, idCanvas, idContenedor, matrizDatos, tituloY) {
-            let ejeX = [], ejeY = [], ejeZ = [], etiquetasTiempo = [];
-            let contadorMuestras = 0;
+        // MOTOR CENTRAL: Calcula matemáticas complejas si el modo es "media"
+        function procesarYDibujar(instanciaChart, idCanvas, idContenedor, matrizDatos, tituloY, modo) {
             let totalPasos = matrizDatos.length;
+            let datasetsGrafica = [];
+            let etiquetasTiempo = [];
+            let anchoCanvas = "100%";
 
-            for (let p = 0; p < totalPasos; p++) {
-                let pasoActual = matrizDatos[p];
-                for (let t = 0; t < 180; t++) {
-                    ejeX.push(pasoActual[t][0]);
-                    ejeY.push(pasoActual[t][1]);
-                    ejeZ.push(pasoActual[t][2]);
-                    etiquetasTiempo.push(contadorMuestras);
-                    contadorMuestras++;
+            if (modo === 'continuo') {
+                // MODO 1: TODOS LOS PASOS SEGUIDOS (Lo que teníamos antes)
+                let ejeX = [], ejeY = [], ejeZ = [];
+                let contador = 0;
+                for (let p = 0; p < totalPasos; p++) {
+                    for (let t = 0; t < 180; t++) {
+                        ejeX.push(matrizDatos[p][t][0]);
+                        ejeY.push(matrizDatos[p][t][1]);
+                        ejeZ.push(matrizDatos[p][t][2]);
+                        etiquetasTiempo.push(contador++);
+                    }
                 }
+                document.getElementById(idContenedor).style.minWidth = `${totalPasos * 150}px`;
+                
+                datasetsGrafica = [
+                    { label: 'Eje X', data: ejeX, borderColor: 'red', borderWidth: 2, pointRadius: 0, tension: 0.4 },
+                    { label: 'Eje Y', data: ejeY, borderColor: 'green', borderWidth: 2, pointRadius: 0, tension: 0.4 },
+                    { label: 'Eje Z', data: ejeZ, borderColor: 'blue', borderWidth: 2, pointRadius: 0, tension: 0.4 }
+                ];
+
+            } else {
+                // MODO 2: PASO MEDIO Y SOMBRA (Percentiles)
+                document.getElementById(idContenedor).style.minWidth = "100%"; // Ocupa justo la pantalla
+                
+                let meanX=[], p10X=[], p90X=[];
+                let meanY=[], p10Y=[], p90Y=[];
+                let meanZ=[], p10Z=[], p90Z=[];
+
+                for (let t = 0; t < 180; t++) {
+                    etiquetasTiempo.push(`${Math.round((t/180)*100)}%`); // Porcentaje del ciclo de marcha
+                    
+                    let valsX = [], valsY = [], valsZ = [];
+                    for (let p = 0; p < totalPasos; p++) {
+                        valsX.push(matrizDatos[p][t][0]);
+                        valsY.push(matrizDatos[p][t][1]);
+                        valsZ.push(matrizDatos[p][t][2]);
+                    }
+
+                    // Función para sacar estadística de un instante 't'
+                    const getStats = (arr) => {
+                        arr.sort((a,b) => a-b); // Ordenamos de menor a mayor
+                        let suma = arr.reduce((a,b)=>a+b,0);
+                        return {
+                            mean: suma / arr.length,
+                            p10: arr[Math.floor(arr.length * 0.1)],
+                            p90: arr[Math.floor(arr.length * 0.9)]
+                        };
+                    };
+
+                    let statsX = getStats(valsX);
+                    let statsY = getStats(valsY);
+                    let statsZ = getStats(valsZ);
+
+                    meanX.push(statsX.mean); p10X.push(statsX.p10); p90X.push(statsX.p90);
+                    meanY.push(statsY.mean); p10Y.push(statsY.p10); p90Y.push(statsY.p90);
+                    meanZ.push(statsZ.mean); p10Z.push(statsZ.p10); p90Z.push(statsZ.p90);
+                }
+
+                // Dibujamos las 3 medias y sus 3 sombras
+                // Truco de Chart.js: El 'fill: "-1"' rellena el color hasta la línea anterior
+                datasetsGrafica = [
+                    // EJE X (Rojo)
+                    { label: 'X P10', data: p10X, borderColor: 'transparent', pointRadius: 0, fill: false },
+                    { label: 'Sombra X', data: p90X, borderColor: 'transparent', pointRadius: 0, fill: '-1', backgroundColor: 'rgba(255, 0, 0, 0.15)' },
+                    { label: 'Media X', data: meanX, borderColor: 'red', borderWidth: 3, pointRadius: 0, tension: 0.4 },
+
+                    // EJE Y (Verde)
+                    { label: 'Y P10', data: p10Y, borderColor: 'transparent', pointRadius: 0, fill: false },
+                    { label: 'Sombra Y', data: p90Y, borderColor: 'transparent', pointRadius: 0, fill: '-1', backgroundColor: 'rgba(0, 128, 0, 0.15)' },
+                    { label: 'Media Y', data: meanY, borderColor: 'green', borderWidth: 3, pointRadius: 0, tension: 0.4 },
+
+                    // EJE Z (Azul)
+                    { label: 'Z P10', data: p10Z, borderColor: 'transparent', pointRadius: 0, fill: false },
+                    { label: 'Sombra Z', data: p90Z, borderColor: 'transparent', pointRadius: 0, fill: '-1', backgroundColor: 'rgba(0, 0, 255, 0.15)' },
+                    { label: 'Media Z', data: meanZ, borderColor: 'blue', borderWidth: 3, pointRadius: 0, tension: 0.4 }
+                ];
             }
 
-            document.getElementById(idContenedor).style.minWidth = `${totalPasos * 150}px`;
-
-            if (instanciaChart != null) {
-                instanciaChart.destroy();
-            }
+            if (instanciaChart != null) instanciaChart.destroy();
 
             const ctx = document.getElementById(idCanvas).getContext('2d');
-            
             return new Chart(ctx, {
                 type: 'line',
-                data: {
-                    labels: etiquetasTiempo,
-                    datasets: [
-                        { label: 'Eje X', data: ejeX, borderColor: 'red', borderWidth: 2, pointRadius: 0, tension: 0.4 },
-                        { label: 'Eje Y', data: ejeY, borderColor: 'green', borderWidth: 2, pointRadius: 0, tension: 0.4 },
-                        { label: 'Eje Z', data: ejeZ, borderColor: 'blue', borderWidth: 2, pointRadius: 0, tension: 0.4 }
-                    ]
-                },
+                data: { labels: etiquetasTiempo, datasets: datasetsGrafica },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false, 
                     interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        // Ocultamos las leyendas de las líneas P10 y P90 transparentes para no ensuciar
+                        legend: { labels: { filter: function(item, chart) { return !item.text.includes('P10') && !item.text.includes('Sombra'); } } }
+                    },
                     scales: {
-                        x: { display: false }, 
+                        x: { 
+                            display: true, 
+                            title: { display: true, text: modo === 'media' ? '% del Ciclo de Marcha' : 'Muestras Continuas' } 
+                        },
                         y: { title: { display: true, text: tituloY } }
                     }
                 }

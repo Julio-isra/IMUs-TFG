@@ -5,13 +5,13 @@ from fastapi.staticfiles import StaticFiles
 
 app = FastAPI()
 
-# 1. ¡ATENCIÓN! Pon aquí la ruta exacta donde están tus 13 GB de JSONs
+# 1. Datos JSON
 CARPETA_DATOS = r"D:\Universidad\TFG\IMU_App_JSON" 
 
 # 2. Le decimos a FastAPI que sirva la página web desde la carpeta "static"
 app.mount("/web", StaticFiles(directory="static", html=True), name="static")
 
-# 3. Hacemos que si entras a la IP "pelada", te redirija a la web automáticamente
+# 3. Pagina principal
 @app.get("/")
 def ruta_principal():
     return RedirectResponse(url="/web/")
