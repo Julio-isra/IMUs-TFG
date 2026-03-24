@@ -6,7 +6,7 @@ from fastapi.staticfiles import StaticFiles
 app = FastAPI()
 
 # 1. Datos JSON
-CARPETA_DATOS = r"D:\Universidad\TFG\IMU_App_JSON" 
+CARPETA_DATOS = r"C:\Users\peral\Desktop\TFG\JSON-Prueba"
 
 # 2. Le decimos a FastAPI que sirva la página web desde la carpeta "static"
 app.mount("/web", StaticFiles(directory="static", html=True), name="static")
