@@ -1,0 +1,70 @@
+Diseño Web
+1. La Barra de Navegación (Navbar) Fija
+
+Se queda siempre arriba aunque bajes por la página.
+
+    Izquierda: Un icono pequeñito (ej. 🏃‍♂️ o un logo) y el nombre "Visor Clínico IMU". Si pinchas, te lleva arriba del todo.
+
+    Derecha (Enlaces):
+
+        Inicio
+
+        Herramienta de Análisis (Te lleva directo al buscador del paciente).
+
+        Sobre el Proyecto (Metodología y herramientas).
+
+        Contacto / Autor
+
+2. La Portada (Hero Section)
+
+Es lo primero que ve el tribunal. La imagen de fondo oscura que ya tienes con un texto potente encima.
+
+    Título principal: Plataforma de Análisis Biomecánico.
+
+    Subtítulo: Procesamiento de señales IMU para la evaluación clínica del ciclo de marcha.
+
+    Botón gigante (Call to Action): "Iniciar Análisis Clínico" (Al pulsarlo, la pantalla baja sola hasta donde están las gráficas).
+
+3. Sección: "El Problema y la Solución" (Breve introducción)
+
+Antes de tirarles gráficas a la cara, explicas el por qué de tu TFG en 3 bloques pequeños con iconos (Bootstrap tiene tarjetas muy chulas para esto):
+
+    🎯 El Objetivo: Evaluar patologías de la marcha sin necesidad de laboratorios caros de cámaras.
+
+    ⚙️ El Proceso: Uso de sensores inerciales (IMUs) pegados al cuerpo del paciente.
+
+    📊 El Resultado: Limpieza de datos (MATLAB) y visualización web interactiva en tiempo real.
+
+4. Sección: "Herramienta de Análisis" (El núcleo de tu TFG)
+
+¡Aquí va todo lo que hemos programado juntos!
+
+    La caja para introducir el ID (20090527T000000).
+
+    La tabla de metadatos azules (Hercios, Outliers...).
+
+    Las dos tarjetas gigantes con las gráficas de Acelerómetro y Giroscopio (con sus botones de Continuo y Media + Sombra).
+
+5. Sección: "Sobre el Proyecto" (Tecnologías y Metodología)
+
+Al tribunal le encanta ver qué herramientas dominas. Puedes poner los logos o una lista bonita de tu "Stack Tecnológico" (las herramientas de ingeniería que has usado):
+
+    Procesamiento de Señal: MATLAB (Filtros, interpolación, eliminación de outliers).
+
+    Backend: Python + FastAPI (Servidor asíncrono, gestión de JSONs pesados).
+
+    Frontend: HTML5, Bootstrap 5 (Diseño responsivo), y Chart.js (Renderizado de datos masivos).
+
+    Hardware: Breve mención a los sensores IMU reales que se usaron para capturar los datos.
+
+6. Pie de Página (Footer Institucional)
+
+Vital para darle el toque académico y oficial. Una franja oscura abajo del todo que contenga:
+
+    Tu nombre completo (Autor).
+
+    El nombre de tus tutores/directores.
+
+    El logo de tu Universidad.
+
+    El año académico (ej. 2025/2026).
