@@ -1,0 +1,9 @@
+datos de ferber a imus, (convertir)
+ap para explorar variables, zoom, de cada punto, procesamiento claustering típico knn, h..
+Python o Matlab para el procedimiento,
+realizar app móvil, una imagen de una señal, esqueleto básico
+modificar for para¡no solo coger los pasos segmentados ermes market to imus 
+sacar las posiciones de los marcadores a lo largo de tiempo,
+velocidad angular se usa los angulos 
+acelarion ' posición de un marcador y el angulo
+el copdigo esta con los pasos segmentados 
