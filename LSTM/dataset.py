@@ -6,8 +6,8 @@ from tqdm import tqdm
 # ==========================================
 # CONFIGURACIÓN DE RUTAS
 # ==========================================
-RUTA_CSV = 'datos_ferber.csv' # Cambia si tu excel se llama distinto
-CARPETA_JSONS = 'jsons/'      # Asegúrate de que termina en /
+RUTA_CSV = r'D:\TFG\CSV\run_data_meta.csv'
+CARPETA_JSONS = r'D:\TFG\IMU_App_JSON/'
 
 print("1. Leyendo el diccionario clínico (CSV) y calculando pies...")
 df = pd.read_csv(RUTA_CSV)
