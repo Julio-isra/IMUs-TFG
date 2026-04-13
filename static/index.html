@@ -27,7 +27,7 @@
     <!-- BARRA DE NAVEGACION -->
     <nav class="navbar navbar-expand-lg navbar-light bg-white fixed-top shadow-sm">
         <div class="container-fluid px-4">
-            <a class="navbar-brand fw-bold text-primary" href="#">
+            <a class="navbar-brand fw-bold text-primary" href="#inicio">
                 <i class="fa-solid fa-person-running me-2"></i>Visor Clínico IMU
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menuNavegacion">
@@ -43,6 +43,7 @@
         </div>
     </nav>
 
+    <!-- CABECERA -->
     <header id="inicio" class="hero-bg position-relative">
         <div class="mask h-100 w-100 d-flex justify-content-center align-items-center" style="background-color: rgba(0, 0, 0, 0.7); position: absolute; top:0; left:0;">
             <div class="text-white text-center px-3">
@@ -56,6 +57,7 @@
         </div>
     </header>
 
+    <!-- SECCION: PROYECTO -->
     <section id="proyecto" class="seccion-padding bg-white">
         <div class="container">
             <div class="text-center mb-5">
@@ -88,6 +90,7 @@
         </div>
     </section>
 
+    <!-- SECCION: ANALISIS -->
     <section id="analisis" class="seccion-padding bg-light">
         <div class="container">
             
@@ -100,16 +103,17 @@
                 <div class="card-body p-4 text-center">
                     <div class="row justify-content-center">
                         <div class="col-md-8">
-                            <div class="input-group input-group-lg shadow-sm rounded-3">
+                            <div class="input-group input-group-lg shadow-sm rounded-3 mb-3">
                                 <span class="input-group-text bg-white border-primary text-primary"><i class="fa-solid fa-id-card"></i></span>
                                 <input type="text" id="input-paciente" class="form-control border-primary" placeholder="Ej: 20090527T000000">
-                                <button class="btn btn-primary fw-bold px-4" onclick="descargarDatos()">Descargar Data</button>
                             </div>
+                                <button class="btn btn-primary fw-bold px-4" onclick="descargarDatos()">Descargar Data</button>
                         </div>
                     </div>
                 </div>
             </div>
 
+            <!-- RESULTADO DEL ANALISIS -->
             <div id="zona-resultados" style="display: none;">
                 
                 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -120,17 +124,21 @@
                 <div class="card shadow-sm mb-4 border-0 border-start border-info border-5">
                     <div class="card-body p-3">
                         <div class="row text-center">
-                            <div class="col-4 border-end">
+                            <div class="col-3 border-end">
                                 <span class="text-muted small text-uppercase fw-bold">Frecuencia Muestreo</span>
                                 <h4 id="meta-fs" class="fw-bold text-dark mt-1 mb-0">-</h4>
                             </div>
-                            <div class="col-4 border-end">
-                                <span class="text-muted small text-uppercase fw-bold">Pasos Anómalos (Outliers)</span>
+                            <div class="col-3 border-end">
+                                <span class="text-muted small text-uppercase fw-bold">Pasos Anómalos</span>
                                 <h4 id="meta-outliers" class="fw-bold text-danger mt-1 mb-0">-</h4>
                             </div>
-                            <div class="col-4">
-                                <span class="text-muted small text-uppercase fw-bold">Pasos Válidos Analizados</span>
+                            <div class="col-3 border-end">
+                                <span class="text-muted small text-uppercase fw-bold">Pasos Válidos</span>
                                 <h4 id="meta-validos" class="fw-bold text-success mt-1 mb-0">-</h4>
+                            </div>
+                            <div class="col-3 bg-light rounded-end">
+                                <span class="text-primary small text-uppercase fw-bold"><i class="fa-solid fa-brain me-1"></i>Diagnóstico IA</span>
+                                <h5 id="meta-ia" class="fw-bold mt-1 mb-0">-</h5>
                             </div>
                         </div>
                     </div>
@@ -169,7 +177,7 @@
             const inputId = document.getElementById('input-paciente').value.trim();
             if (inputId === "") return alert("Escribe un ID.");
 
-            document.getElementById('mensaje-estado').innerHTML = "<i class='fa-solid fa-spinner fa-spin text-primary me-2'></i>Descargando matriz...";
+            document.getElementById('mensaje-estado').innerHTML = "<i class='fa-solid fa-file-lines text-primary me-2'></i>Datos del Paciente...";
 
             try {
                 const respuesta = await fetch(`/paciente/${inputId}`);
@@ -190,6 +198,15 @@
                         pasosValidos = datosPacienteCompleto.acc_interp_nooutliers.L_foot.length;
                     }
                     document.getElementById('meta-validos').innerText = pasosValidos;
+                    // --- LÓGICA DE LA INTELIGENCIA ARTIFICIAL ---
+                    const cajaIA = document.getElementById('meta-ia');
+                    if (datosPacienteCompleto.ia_diagnostico === "Sano") {
+                        cajaIA.innerHTML = `<span class="text-success"><i class="fa-solid fa-check-circle me-1"></i>SANO <small>(${datosPacienteCompleto.ia_probabilidad}%)</small></span>`;
+                    } else if (datosPacienteCompleto.ia_diagnostico === "Lesionado") {
+                        cajaIA.innerHTML = `<span class="text-danger"><i class="fa-solid fa-triangle-exclamation me-1"></i>LESIÓN <small>(${datosPacienteCompleto.ia_probabilidad}%)</small></span>`;
+                    } else {
+                        cajaIA.innerHTML = `<span class="text-secondary">No evaluable</span>`;
+                    }
 
                     // Limpiamos todo y creamos LA PRIMERA GRÁFICA POR DEFECTO
                     document.getElementById('contenedor-graficas').innerHTML = "";
@@ -207,7 +224,7 @@
             }
         }
 
-        // FUNCIÓN ESTRELLA: FABRICAR GRÁFICAS NUEVAS
+        // FUNCIÓN: FABRICAR GRÁFICAS NUEVAS
         function crearTarjetaGrafica() {
             contadorGraficas++;
             const id = contadorGraficas;
@@ -220,7 +237,7 @@
                 });
             }
 
-            // HTML Inyectado Dinámicamente (Plantilla de la tarjeta)
+            // HTML (Plantilla de la tarjeta)
             const htmlTarjeta = `
             <div class="card shadow-sm mb-4 border-0" id="tarjeta-${id}">
                 <div class="card-header bg-white border-bottom py-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
@@ -290,41 +307,47 @@
 
             // Extraemos los datos dependiendo de si eligió Acelerómetro o Giroscopio
             let matriz = null;
+            let matriz_media = null;
             let tituloY = "";
             let colorPrimario = "";
 
             if (sensor === 'acc') {
-                matriz = datosPacienteCompleto.acc_interp_nooutliers[parte];
+                matriz = datosPacienteCompleto.acc_interp[parte];
+                matriz_media = datosPacienteCompleto.acc_interp_nooutliers[parte];
                 tituloY = 'Aceleración (m/s²)';
                 colorPrimario = '#e74c3c'; // Rojo
             } else {
-                matriz = datosPacienteCompleto.gyro_interp_nooutliers[parte];
+                matriz = datosPacienteCompleto.gyro_interp[parte];
+                matriz_media = datosPacienteCompleto.gyro_interp_nooutliers[parte];
                 tituloY = 'Vel. Angular (deg/s)';
                 colorPrimario = '#3498db'; // Azul
             }
+            
 
             // Llamamos a nuestro motor matemático y guardamos el canvas en el diccionario
             instanciasChart[id] = procesarYDibujar(
                 instanciasChart[id], 
                 `canvas-${id}`, 
-                `contenedor-canvas-${id}`, 
+                `contenedor-canvas-${id}`,
                 matriz, 
+                matriz_media, 
                 tituloY, 
                 modo,
                 colorPrimario
             );
         }
 
-        // MOTOR MATEMÁTICO (Unificado y mejorado)
-        function procesarYDibujar(instanciaChart, idCanvas, idContenedor, matrizDatos, tituloY, modo, colorTheme) {
-            let totalPasos = matrizDatos.length;
+        // MOTOR MATEMÁTICO 
+        function procesarYDibujar(instanciaChart, idCanvas, idContenedor,matrizDatos, matrizDatos_media, tituloY, modo, colorTheme) {
+            let totalPasos = matrizDatos_media.length;
             let datasetsGrafica = [];
             let etiquetasTiempo = [];
+            let totalPasosSIN = matrizDatos.length;
 
             if (modo === 'continuo') {
                 let ejeX = [], ejeY = [], ejeZ = [];
                 let contador = 0;
-                for (let p = 0; p < totalPasos; p++) {
+                for (let p = 0; p < totalPasosSIN; p++) {
                     for (let t = 0; t < 180; t++) {
                         ejeX.push(matrizDatos[p][t][0]);
                         ejeY.push(matrizDatos[p][t][1]);
@@ -332,7 +355,7 @@
                         etiquetasTiempo.push(contador++);
                     }
                 }
-                document.getElementById(idContenedor).style.minWidth = `${totalPasos * 150}px`;
+                document.getElementById(idContenedor).style.minWidth = `${totalPasosSIN * 150}px`;
                 
                 datasetsGrafica = [
                     { label: 'Eje X', data: ejeX, borderColor: '#e74c3c', borderWidth: 2, pointRadius: 0, tension: 0.4 },
@@ -354,9 +377,9 @@
                     
                     let valsX = [], valsY = [], valsZ = [];
                     for (let p = 0; p < totalPasos; p++) {
-                        valsX.push(matrizDatos[p][t][0]);
-                        valsY.push(matrizDatos[p][t][1]);
-                        valsZ.push(matrizDatos[p][t][2]);
+                        valsX.push(matrizDatos_media[p][t][0]);
+                        valsY.push(matrizDatos_media[p][t][1]);
+                        valsZ.push(matrizDatos_media[p][t][2]);
                     }
 
                     const getStats = (arr) => {

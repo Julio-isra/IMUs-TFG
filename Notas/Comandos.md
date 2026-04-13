@@ -46,7 +46,7 @@ DATOS DEL script de matlab:
 
 
 ---------------------------------------------------------------------------
-continuo los datos en bruto, sin outliers, pero el paso mediano(media) y medio con outliers, desviacion estar afura
+continuo los datos en bruto, sin outliers, pero el paso mediano(media) y medio con outliers, desviacion estar afura-----------------hecho
 25-75 primer segundo y tercer cuartil
 
 en python aparte en un fichero aparte generar redes neuronales, 
@@ -60,3 +60,33 @@ auto encoder
 https://ieeexplore.ieee.org/document/7837994 abrir desde myapps
 
 https://bitbucket.org/bookcold/pretraining_lstm/src/master/
+
+
+preguntar si el modelo se tiene que hacer con los pasos sin outliers o con, sin pasos invalidos o con los invalidos tambien
+Posibles mejoras:
+
+    Añadir más capas LSTM (apiladas) con return_sequences=True para aprender jerarquías temporales.
+
+    Añadir batch normalization.
+
+    Ajustar la tasa de dropout (0.5 es alta; a veces 0.2-0.3 funciona mejor).
+
+    Probar con GRU (menos parámetros, igual rendimiento a veces).
+
+    Usar early stopping para no sobreentrenar.
+
+
+
+-------------------------------------------------------------------------------------
+
+mirar los test y entrenamiento no coger solo izq y hacer el examen solo con derecha, también no entrenar con 90% enferomos y examen 10% sanos
+
+Matlab estraficada stratify 
+
+meter aceleromet4ro y giroscopio y seguramente me salgra mas ejes 
+
+bajar celdas en el modelo 8, 16 etc 64 es mucho
+
+dependiente de lados o por paciente el dataset. respuesta final para el sujeto
+
+esquema de cada script explicando todo, entradas, que hago con eso, para que donde lo uso, y conexiones con otros script
