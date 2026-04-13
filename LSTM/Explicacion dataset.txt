@@ -1,0 +1,82 @@
+---------------------- LIBRERIAS ----------------------
+pandas: nos permite trabajar con con las tablas de datos (CSV) como hojas de Excel
+numpy: nos permite trabajar con arrays y operaciones matemáticas 
+json: nos permite leer y escribir archivos .json, que es donde tenemos los datos del acelerometro y giroscopio
+os: nos permite interactuar con el OS para crear rutas, carpetas, etc.
+tqdm: nos permite mostrar barras de progreso
+-------------------------------------------------------
+
+1. Creamos las rutas del archivo CSV y de la carpeta de todos los json: RUTA_CSV, CARPETA_JSONS
+
+2. Leemos el archivo CSV y lo convertimos en una tabla DataFrame para facilitarnos el trabajo con datos tabulares, si no tendriamos que crear listas de listas o diccionarios y trabajar con ellos.
+        Ej de DataFrame:Ver las primeras filas: df.head() muestra las 5 primeras.
+                        Acceder a una columna: df['filename'] te da todos los nombres de archivo.
+                        Filtrar filas: df[df['InjDefn'] == 'no injury'] te da solo los pacientes sanos.
+                        Aplicar operaciones: df['edad'].mean() calcula la edad media.
+                        Recorrer filas: con df.iterrows().
+
+3. Creamos un diccionario para guardar como clave el nombre del archivo json, es decir, el paciente. Y como valor otro diccionario en el que indica que pies extraer y con que etiqueta.
+        diccionario_pacientes = {
+            "paciente_sano.json": {"L_foot": 0, "R_foot": 0},
+            "paciente_lesionado_izquierdo.json": {"L_foot": 1},
+            "paciente_bilateral.json": {"L_foot": 1, "R_foot": 1},
+            "paciente_lesionado_derecho.json": {"R_foot": 1}
+        }
+
+4. Bucle for: recorremos las filas, index es simplemente el indice, y fila seria mas o menos el diccionario donde se contiene el valor de cada columna del DataFrame.
+    Para cada paciente/json:
+        - [filename] Buscamos la columna "filename" y cogemos el nombre del archivo json del paciente sin espacios al incio y al final y si casualmente no termina en .json se lo añadimos
+        - [es_sano] Buscamos la columna "InjDefn" y cogemos el valor en minusculas y lo comparamos con "no injury" si es igual es True (sano) si no es igual es False (no sano)
+        - Creamos diccionario "pies_a_extraer" que será el que este dentro del otro diccionario "diccionario_pacientes"
+        - Vemos si está ponemos los dos pies con valor "0" al diccionario pies_a_extraer
+        - Si no está sano leemos las columnas "InjSide" y "InjSide2" para ver el lado de la lesión: si el lado es left pues guardamos L_foot = 1 en el diccionario "pies_a_extraer" y viceversa si es right
+        - Añadimos el diccionario "pies_a_extraer" a la clave del paciente
+
+5. Creamos dos listas vacias donde "X_lista" contendrá los valores de los pasos y "Y_lista" contendrá el valor de sano o no sano (0 o 1)
+
+6. Creamos una lista con todos los nombres de los archivos json de los pacientes
+
+7. Recorremos la lista creada "archivos_en_carpeta":
+    Para cada archivo json/paciente
+        - Si el nombre se encuentra en el diccionario "diccionario_pacientes" entonces sacamos el valor, es decir, las reglas de los pies.
+        - Creamos la ruta completa del archivo json 
+        - Abrimos el archivo json y leemos el contenido para transformarlo a un diccionario ("datos")
+        - Recorremos el diccionario de "reglas_pies"
+                - Obtenemos el valor(nombre_pie) para saber si es drch o izq y la clave(etiqueta) para saber si esta sano o no (0 o 1)
+                - 
+
+
+
+
+
+
+
+========================================================================================
+ ÍNDICE |   X_lista (Los Datos / La Zancada)                     |  Y_lista (La Etiqueta)
+========================================================================================
+
+           Paciente 1 (Sano) - Pie Izquierdo - Paso 1
+  [0]   |  [ [0.51, 1.22, -0.45],  <-- Milisegundo 1          |      0  (Sano)
+        |    [0.55, 1.30, -0.40],  <-- Milisegundo 2          |
+        |    ... (así hasta 180 filas) ...                    |
+        |    [0.49, 1.10, -0.48] ] <-- Milisegundo 180        |
+
+----------------------------------------------------------------------------------------
+           Paciente 1 (Sano) - Pie Izquierdo - Paso 2
+  [1]   |  [ [0.52, 1.25, -0.43],  <-- Milisegundo 1          |      0  (Sano)
+        |    [0.56, 1.31, -0.41],  <-- Milisegundo 2          |
+        |    ... (así hasta 180 filas) ...                    |
+        |    [0.48, 1.12, -0.45] ] <-- Milisegundo 180        |
+
+----------------------------------------------------------------------------------------
+           ... (Se guardan los 13 pasos de este paciente) ...
+----------------------------------------------------------------------------------------
+
+           Paciente 2 (Lesión Izquierda) - Pie Izquierdo - Paso 1
+ [14]   |  [ [0.80, 2.10, -0.90],  <-- Milisegundo 1          |      1  (Lesión)
+        |    [0.85, 2.20, -0.85],  <-- Milisegundo 2          |
+        |    ... (así hasta 180 filas) ...                    |
+        |    [0.75, 1.95, -0.88] ] <-- Milisegundo 180        |
+
+========================================================================================
+                   ... ¡Y ASÍ HASTA LLEGAR AL ÍNDICE 58.801! ...
