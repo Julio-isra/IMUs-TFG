@@ -51,32 +51,31 @@ tqdm: nos permite mostrar barras de progreso
 
 
 
-========================================================================================
- ÍNDICE |   X_lista (Los Datos / La Zancada)                     |  Y_lista (La Etiqueta)
-========================================================================================
+==========================================================================================================
+ ÍNDICE |   X_lista (180 puntos, 6 canales)              |  Y_lista (Etiqueta)|  ID_lista (El Rastreador)
+==========================================================================================================
 
-           Paciente 1 (Sano) - Pie Izquierdo - Paso 1
-  [0]   |  [ [0.51, 1.22, -0.45],  <-- Milisegundo 1          |      0  (Sano)
-        |    [0.55, 1.30, -0.40],  <-- Milisegundo 2          |
-        |    ... (así hasta 180 filas) ...                    |
-        |    [0.49, 1.10, -0.48] ] <-- Milisegundo 180        |
+           PACIENTE SANO (Las dos piernas se procesan y se etiquetan con 0)
+  [0]   |  [ [AccX, AccY, AccZ, GyrX, GyrY, GyrZ],       |      0  (Sano)     |   "20090527T000000.json"
+        |    ... (180 filas de la Zancada 1 - Pie Izq) ] |                    |
+----------------------------------------------------------------------------------------------------------
+  [1]   |  [ [AccX, AccY, AccZ, GyrX, GyrY, GyrZ],       |      0  (Sano)     |   "20090527T000000.json"
+        |    ... (180 filas de la Zancada 2 - Pie Izq) ] |                    |
+----------------------------------------------------------------------------------------------------------
+  [2]   |  [ [AccX, AccY, AccZ, GyrX, GyrY, GyrZ],       |      0  (Sano)     |   "20090527T000000.json"
+        |    ... (180 filas de la Zancada 1 - Pie Der) ] |                    |
 
-----------------------------------------------------------------------------------------
-           Paciente 1 (Sano) - Pie Izquierdo - Paso 2
-  [1]   |  [ [0.52, 1.25, -0.43],  <-- Milisegundo 1          |      0  (Sano)
-        |    [0.56, 1.31, -0.41],  <-- Milisegundo 2          |
-        |    ... (así hasta 180 filas) ...                    |
-        |    [0.48, 1.12, -0.45] ] <-- Milisegundo 180        |
+==========================================================================================================
 
-----------------------------------------------------------------------------------------
-           ... (Se guardan los 13 pasos de este paciente) ...
-----------------------------------------------------------------------------------------
+           PACIENTE LESIONADO (Ej: Dolor de rodilla. Se procesan ambas piernas y se etiquetan con 1)
+  [14]  |  [ [AccX, AccY, AccZ, GyrX, GyrY, GyrZ],       |      1  (Lesión)   |   "20101115T093000.json"
+        |    ... (180 filas de la Zancada 1 - Pie Izq) ] |                    |
+----------------------------------------------------------------------------------------------------------
+  [15]  |  [ [AccX, AccY, AccZ, GyrX, GyrY, GyrZ],       |      1  (Lesión)   |   "20101115T093000.json"
+        |    ... (180 filas de la Zancada 2 - Pie Izq) ] |                    |
+----------------------------------------------------------------------------------------------------------
+  [16]  |  [ [AccX, AccY, AccZ, GyrX, GyrY, GyrZ],       |      1  (Lesión)   |   "20101115T093000.json"
+        |    ... (180 filas de la Zancada 1 - Pie Der) ] |                    |
 
-           Paciente 2 (Lesión Izquierda) - Pie Izquierdo - Paso 1
- [14]   |  [ [0.80, 2.10, -0.90],  <-- Milisegundo 1          |      1  (Lesión)
-        |    [0.85, 2.20, -0.85],  <-- Milisegundo 2          |
-        |    ... (así hasta 180 filas) ...                    |
-        |    [0.75, 1.95, -0.88] ] <-- Milisegundo 180        |
-
-========================================================================================
-                   ... ¡Y ASÍ HASTA LLEGAR AL ÍNDICE 58.801! ...
+==========================================================================================================
+                   ... ¡Y ASÍ HASTA LLEGAR A LA ÚLTIMA ZANCADA! ...

@@ -50,6 +50,7 @@ print(f"{len(diccionario_pacientes)} pacientes.")
 print("\n2. Extrayendo los ciclos de marcha de archivos JSON")
 X_lista = []
 Y_lista = []
+ID_lista = []
 
 # Listamos solo los archivos .json
 # archivos_en_carpeta = [f for f in os.listdir(CARPETA_JSONS) if f.endswith('.json')]
@@ -93,11 +94,12 @@ for archivo in tqdm(archivos_en_carpeta, desc="Procesando", unit="archivos"):
                             paso_a = np.array(pasos_acc[i])   # Forma: (180, 3)
                             paso_g = np.array(pasos_gyro[i])  # Forma: (180, 3)
                             
-                            Juntamos los 3 ejes de Acc y los 3 de Gyro en uno solo (180, 6)
+                            # Juntamos los 3 ejes de Acc y los 3 de Gyro en uno solo (180, 6)
                             paso_combinado = np.concatenate((paso_a, paso_g), axis=1)
                             
                             X_lista.append(paso_combinado)
                             Y_lista.append(etiqueta_paciente)
+                            ID_lista.append(archivo)
                     except KeyError:
                         # Si justo a este paciente le falta ese pie en el JSON, lo ignoramos
                         pass
@@ -109,6 +111,7 @@ for archivo in tqdm(archivos_en_carpeta, desc="Procesando", unit="archivos"):
 print("\n3. Convirtiendo a tensores matemáticos y guardando...")
 X_tensor = np.array(X_lista)
 Y_tensor = np.array(Y_lista)
+ID_tensor = np.array(ID_lista)
 
 print("\n==========================================")
 print(f"FORMA DE X (Datos): {X_tensor.shape}")
@@ -117,5 +120,6 @@ print("==========================================")
 
 np.save('X_entrenamiento_2.npy', X_tensor)
 np.save('Y_entrenamiento_2.npy', Y_tensor)
+np.save('ID_entrenamiento_6canales.npy', ID_tensor)
 
 print("\n¡Proceso completado!")
