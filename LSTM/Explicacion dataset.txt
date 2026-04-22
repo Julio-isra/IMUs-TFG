@@ -27,25 +27,26 @@ tqdm: nos permite mostrar barras de progreso
     Para cada paciente/json:
         - [filename] Buscamos la columna "filename" y cogemos el nombre del archivo json del paciente sin espacios al incio y al final y si casualmente no termina en .json se lo añadimos
         - [es_sano] Buscamos la columna "InjDefn" y cogemos el valor en minusculas y lo comparamos con "no injury" si es igual es True (sano) si no es igual es False (no sano)
-        - Creamos diccionario "pies_a_extraer" que será el que este dentro del otro diccionario "diccionario_pacientes"
-        - Vemos si está ponemos los dos pies con valor "0" al diccionario pies_a_extraer
-        - Si no está sano leemos las columnas "InjSide" y "InjSide2" para ver el lado de la lesión: si el lado es left pues guardamos L_foot = 1 en el diccionario "pies_a_extraer" y viceversa si es right
-        - Añadimos el diccionario "pies_a_extraer" a la clave del paciente
+        - Si es sano se le asigna una etiqueta = 0, si esta lesionado etiqueta = 1
+        - en el diccionario "diccionario_pacientes" a la clave filename del paciente se le asgina la clave "etiqueta".
 
-5. Creamos dos listas vacias donde "X_lista" contendrá los valores de los pasos y "Y_lista" contendrá el valor de sano o no sano (0 o 1)
+5. Creamos dos listas vacias donde "X_lista" contendrá los valores de los pasos, "Y_lista" contendrá el valor de sano o no sano (0 o 1), y "ID_lista" donde asginaremos el mismo valor para los pasos que sean del mismo paciente
 
 6. Creamos una lista con todos los nombres de los archivos json de los pacientes
 
 7. Recorremos la lista creada "archivos_en_carpeta":
     Para cada archivo json/paciente
-        - Si el nombre se encuentra en el diccionario "diccionario_pacientes" entonces sacamos el valor, es decir, las reglas de los pies.
+        - Si el nombre se encuentra en el diccionario "diccionario_pacientes" entonces sacamos el valor, es decir, si esta sano (0) o no (1).
         - Creamos la ruta completa del archivo json 
         - Abrimos el archivo json y leemos el contenido para transformarlo a un diccionario ("datos")
-        - Recorremos el diccionario de "reglas_pies"
-                - Obtenemos el valor(nombre_pie) para saber si es drch o izq y la clave(etiqueta) para saber si esta sano o no (0 o 1)
-                - 
+        - Recorremos los datos para los dos pies ['L_foot', 'R_foot'] 
+                - Guardamos los datos del acelerometro
+                - Guardamos los daors del giroscopio
+                - Comprobamos que los datos del acelerometro y giroscopio sean de la misma longitud y si no lo tiene guardamos el del menor, luego guardamos esa longitud (minimo de pasos)
+                - para cada paso guardamos su acelerometro y giroscopio y los juntamos en un solo archivo np
+                - Para X_lista le agregamos el paso combinado, para Y_lista la etiqueta de si esta sano o no y para ID_lista el nombre del archivo para
 
-
+8. Al terminar el bucle trasformamos las 3 listas en archivos np
 
 
 

@@ -9,12 +9,12 @@ from fastapi.responses import JSONResponse
 
 app = FastAPI()
 
-# --- CARGAMOS LA INTELIGENCIA ARTIFICIAL ---
+# --- CARGAMOS EL MODELO LSTM ---
 try:
     modelo_ia = load_model('LSTM/modelo_lesiones_lstm.h5')
-    print("✅ Cerebro LSTM cargado correctamente.")
+    print("---- Modelo LSTM cargado correctamente. ----")
 except Exception as e:
-    print("❌ Error al cargar el modelo:", e)
+    print("---- Error al cargar el modelo: ", e)
     modelo_ia = None
 
 # 1. Datos JSON

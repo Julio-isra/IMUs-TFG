@@ -1,0 +1,16 @@
+En este modelo usamos: 
+    - Estratificacion y validacion por varianza cruzada
+    - 5 bloques, 5 vueltas
+    - 80% train, 20% test (estratificado)
+    - pasos de un paciente van siempre en grupo
+
+---------------------- LIBRERIAS ----------------------
+numpy: nos permite realizar operaciones matemáticas con arreglos multidimensionales (.npy es formato de NumPy)
+tensorflow: Framework para construir y entrenar redes neuronales
+Sequential: Permite apilar capas de red de forma lineal.
+LSTM: Capa de Long Short-Term Memory
+StratifiedGroupKFold: Divide los datos en *k* particiones (folds) respetando:
+    - Estratificación: Mantiene el mismo porcentaje de clases (Sanos / Lesionados) en cada partición.
+    - Agrupación: Asegura que todas las muestras de un mismo paciente queden en el mismo fold (entrenamiento o prueba, pero nunca repartidas)
+matplotlib.pyplot: Aunque no se usa explícitamente después, está importado por si se quisiera graficar resultados.
+
