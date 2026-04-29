@@ -1,114 +1,88 @@
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import LSTM, Dense, Input
+from tensorflow.keras.layers import Input, LSTM, Dense
 from sklearn.model_selection import StratifiedGroupKFold
 from sklearn.utils.class_weight import compute_class_weight
 import matplotlib.pyplot as plt
 
-# ============================================================
-# 1. CARGA DE DATOS
-# ============================================================
-print("Cargando tensores...")
+# ==========================================
+# BLOQUE 1: CARGA DE DATOS
+# ==========================================
+print("Cargando tensores desde el disco...")
 X = np.load('X_entrenamiento_2.npy')
 Y = np.load('Y_entrenamiento_2.npy')
 IDs = np.load('ID_entrenamiento_6canales.npy')
 
-# Verificación de forma y rango de valores (IMPORTANTE)
-print(f"Forma de X: {X.shape}")  # Debería ser (muestras, pasos, canales)
-print(f"Rango de valores en X: [{np.min(X):.2f}, {np.max(X):.2f}]")
-print(f"Distribución de clases: Sanos={np.sum(Y==0)} ({np.mean(Y==0)*100:.1f}%), Lesionados={np.sum(Y==1)} ({np.mean(Y==1)*100:.1f}%)")
+print(f"Forma de X (Zancadas, Muestras, Canales): {X.shape}")
+print(f"Total de etiquetas Y: {Y.shape}")
+print(f"Total de IDs de pacientes: {IDs.shape}\n")
 
-# ============================================================
-# 2. NORMALIZACIÓN (Z-Score por canal)
-# ============================================================
-# Calculamos media y desviación sobre TODOS los datos de entrenamiento
-# (esto se hace antes de la validación cruzada para evitar fugas)
-mean = np.mean(X, axis=(0, 1), keepdims=True)
-std = np.std(X, axis=(0, 1), keepdims=True)
-X = (X - mean) / (std + 1e-8)  # evitamos división por cero
-print("Datos normalizados (media=0, std=1 por canal).")
-
-# ============================================================
-# 3. FÁBRICA DE MODELOS (ARQUITECTURA MEJORADA)
-# ============================================================
+# ==========================================
+# BLOQUE 2: FÁBRICA DE CEREBROS (MODELO)
+# ==========================================
 def crear_modelo():
-    """
-    Construye un modelo LSTM más profundo:
-    - Input explícito (corrige el warning)
-    - Dos capas LSTM (64 → 32)
-    - Capa densa intermedia con ReLU
-    - Salida sigmoide para clasificación binaria
-    """
-    modelo = Sequential([
-        Input(shape=(X.shape[1], X.shape[2])),   # (time_steps, features)
-        LSTM(64, return_sequences=True),         # Primera LSTM, devuelve secuencia
-        LSTM(32),                                # Segunda LSTM, solo último estado
-        Dense(16, activation='relu'),            # Capa oculta no lineal
-        Dense(1, activation='sigmoid')           # Salida binaria
-    ])
-    modelo.compile(
-        optimizer='adam',
-        loss='binary_crossentropy',
-        metrics=['accuracy']
-    )
+    modelo = Sequential()
+    # Estilo moderno: Definimos la entrada por separado
+    modelo.add(Input(shape=(X.shape[1], X.shape[2]))) 
+    # Memoria a corto-largo plazo (ampliada a 32 neuronas)
+    modelo.add(LSTM(32)) 
+    # Decisión final (0 a 1)
+    modelo.add(Dense(1, activation='sigmoid'))
+    
+    modelo.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
     return modelo
 
-# ============================================================
-# 4. CONFIGURACIÓN DE VALIDACIÓN CRUZADA
-# ============================================================
-N_SPLITS = 5
-sgkf = StratifiedGroupKFold(n_splits=N_SPLITS, shuffle=True, random_state=42)
+# ==========================================
+# BLOQUE 3: EL ORGANIZADOR (K-FOLD) Y ENTRENAMIENTO
+# ==========================================
+# Preparamos los 5 exámenes, aislando a los pacientes y manteniendo la proporción sano/lesionado
+sgkf = StratifiedGroupKFold(n_splits=5, shuffle=True, random_state=42)
 
 precisiones_examenes = []
-mejor_precision = 0.0
+mejor_precision = 0
 
-print("\n=== INICIANDO VALIDACIÓN CRUZADA (5 FOLDS) ===")
+print("=== INICIANDO VALIDACIÓN CRUZADA (5 FOLDS) ===")
 
-# ============================================================
-# 5. BUCLE PRINCIPAL DE ENTRENAMIENTO / EVALUACIÓN
-# ============================================================
 for fold, (train_idx, test_idx) in enumerate(sgkf.split(X, Y, groups=IDs)):
-    print(f"\n--- Entrenando Fold {fold + 1}/{N_SPLITS} ---")
-
-    # Separar datos del fold actual
+    print(f"\n--- Entrenando Fold {fold + 1}/5 ---")
+    
+    # Repartimos los apuntes y los exámenes físicos
     X_train, X_test = X[train_idx], X[test_idx]
     Y_train, Y_test = Y[train_idx], Y[test_idx]
-
-    # Calcular pesos de clase para compensar desbalanceo
-    clases = np.unique(Y_train)
-    pesos = compute_class_weight(class_weight='balanced', classes=clases, y=Y_train)
-    class_weight_dict = dict(zip(clases, pesos))
-    print(f"  Pesos de clase: {class_weight_dict}")
-
-    # Crear modelo nuevo (pesos aleatorios)
+    
+    # 1. Calculamos los pesos justos para que la IA no sea perezosa
+    pesos = compute_class_weight('balanced', classes=np.unique(Y_train), y=Y_train)
+    pesos_diccionario = {0: pesos[0], 1: pesos[1]}
+    print(f"Pesos de atención -> Sanos (0): {pesos[0]:.2f}x | Lesionados (1): {pesos[1]:.2f}x")
+    
+    # 2. Pedimos un cerebro nuevo y reseteado
     modelo = crear_modelo()
-
-    # Entrenamiento
+    
+    # 3. ¡A estudiar! Le pasamos los pesos y aumentamos el tiempo a 40 épocas
     modelo.fit(
-        X_train, Y_train,
-        epochs=20,                  # Un poco más de épocas
-        batch_size=64,
-        class_weight=class_weight_dict,
-        verbose=0                   # Silencioso para no saturar la consola
+        X_train, Y_train, 
+        epochs=40, 
+        batch_size=64, 
+        class_weight=pesos_diccionario, 
+        verbose=0
     )
-
-    # Evaluación sobre el conjunto de prueba (pacientes no vistos)
+    
+    # 4. ¡El Examen!
     resultados = modelo.evaluate(X_test, Y_test, verbose=0)
     precision_actual = resultados[1] * 100
-    print(f"  Precisión en Fold {fold + 1}: {precision_actual:.2f}%")
-
     precisiones_examenes.append(precision_actual)
-
-    # Guardar el mejor modelo encontrado hasta ahora
+    print(f"Precisión en el examen del Fold {fold + 1}: {precision_actual:.2f}%")
+    
+    # 5. Guardar el trofeo si es la mejor nota hasta ahora (en formato .keras)
     if precision_actual > mejor_precision:
         mejor_precision = precision_actual
-        modelo.save('modelo_paciente_mejor.keras')  # Formato nativo Keras (recomendado)
-        print(f"  → Nuevo mejor modelo guardado (Fold {fold + 1}).")
+        modelo.save('modelo_paciente_6C_mejor.keras')
+        print("   -> ¡Nuevo récord! Modelo guardado.")
 
-# ============================================================
-# 6. RESULTADOS FINALES
-# ============================================================
+# ==========================================
+# BLOQUE 4: BOLETÍN DE NOTAS FINAL
+# ==========================================
 media = np.mean(precisiones_examenes)
 desviacion = np.std(precisiones_examenes)
 
@@ -116,5 +90,4 @@ print("\n================================================")
 print("🏆 RESULTADOS FINALES DE LA VALIDACIÓN CRUZADA")
 print("================================================")
 print(f"Precisión Media: {media:.2f}% (± {desviacion:.2f}%)")
-print("================================================")
-print("Mejor modelo guardado como 'modelo_paciente_mejor.keras'")
+print("================================================\n")

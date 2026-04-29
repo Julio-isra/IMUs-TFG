@@ -4,8 +4,8 @@ import json
 import os
 from tqdm import tqdm  
 
-RUTA_CSV = r'D:\TFG\CSV\run_data_meta.csv'
-CARPETA_JSONS = r'D:\TFG\IMU_App_JSON/'
+RUTA_CSV = r'D:\Universidad\TFG\CSV\run_data_meta.csv'
+CARPETA_JSONS = r'D:\Universidad\TFG\IMU_App_JSON'
 
 print("1 - Leyendo archivo CSV ")
 df = pd.read_csv(RUTA_CSV)
